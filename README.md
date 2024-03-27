@@ -1,75 +1,73 @@
-# Assignment3_
-PHOTOSHOP CODES
 #include "Image_Class.h"
 #include <iostream>
 #include <algorithm>
 #include <string>
 using namespace std;
 
-bool isValidExtension(const string& filename) {
-    // Get the position of the last dot in the filename
+// Function to check if the file extension is valid
+bool Valid_Extension(const string& filename) {
     size_t dotPos = filename.find_last_of('.');
-
-    // Check if the dot was found and if it's not the last character in the filename
     if (dotPos != string::npos && dotPos != filename.length() - 1) {
-        // Extract the extension from the filename
         string extension = filename.substr(dotPos + 1);
-
-        // List of supported extensions
         const string supportedExtensions[] = { "jpg", "jpeg", "png", "bmp", "tga" };
-
-        // Check if the extracted extension matches any of the supported extensions
         for (const string& ext : supportedExtensions) {
             if (extension == ext) {
                 return true; // Extension is valid
             }
         }
     }
-
     return false; // Extension is not valid
 }
 
-int Validmenu_Choice(int start,int endd) {
-    int Number;
-    while(true) {
-        string input1;
-        cin.ignore();
-        getline(cin , input1);
-        if (input1.find_first_not_of("0123456789") != string::npos) {  // Check if the input contains only digits.
-            cout << "Please enter a valid number :" << endl;
-            continue;   //This line causes the loop to skip the rest of the current iteration and start a new one if the input is invalid.
-        }
-        //check validation.
-        try {
-            Number = stoi(input1); // convert input to an integer
-            if (Number < start || Number > endd) {
-                cout << "Please enter a valid number : " << endl;
-                continue;
-            } else
-            {
-                break;  //This line sets the flag to false once a valid number is entered, terminating the loop.
+// Function to get a valid filename from the user
+string validfilename_() {
+    string filename;
+    while (true) {
+        cout <<"Please insert the filename of your photo: "<<endl;
+        cin >> filename;
+        if (!Valid_Extension(filename)) {
+            cerr << "Unsupported file format. Please provide a filename with a supported extension (jpg, jpeg, png, bmp, tga)." << endl;
+        } else {
+            try {
+                // Load the photo into the Image object
+                Image original(filename);
+                if (original.imageData == nullptr) {
+                    cerr << "Failed to load the image! Please check the filename." << endl;
+                    continue; // Prompt for input again
+                }
+                return filename;
+            } catch (const std::invalid_argument& e) {
+                cerr << e.what() << endl; // Print the error message
+                cerr << "Please provide a valid filename." << endl;
+                cin.clear(); // Clear the error flag
+                cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Discard input buffer
             }
         }
-        catch (const invalid_argument &e){ //to prevent error when the user click enter without write anything
-            cout << "Invalid input. Please enter a valid number : " <<endl;
-            cin.clear();    // Clear error flags
-            continue;
-        }
-        catch (const out_of_range &e) {   //to prevent error when the user input a very big ranged number.
-            cout << "Input out of range. Please enter a valid number within the range :" <<endl;
-            cin.clear();
-            continue;
+    }
+}
+
+// Function to validate menu choices
+int Validmenu_Choice(int menu_size) {
+    int choice;
+    while (true) {
+        cout << "Enter your choice: ";
+        if (!(cin >> choice) || choice < 1 || choice > menu_size) {
+            cout << "Invalid input. Please enter a valid number between 1 and " << menu_size << "." << endl;
+            cin.clear(); // Clear error flags
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard the input buffer
+        } else {
+            break;
         }
     }
-
-    return Number;
+    return choice;
 }
 
 //filter 1
 
 // Function to apply Filter 1: Convert image to grayscale
-void applyGrayscaleFilter(string& filename) {
-    Image image(filename);
+void applyGrayscaleFilter(Image& image) {
+    Image result = image; // Create a copy of the original image
+    // Image image(filename);
     int width = image.width;
     int height = image.height;
     int channels = image.channels;
@@ -86,7 +84,9 @@ void applyGrayscaleFilter(string& filename) {
             }
         }
     }
-    image.saveImage("grayscale_" + filename);
+    //image.saveImage("grayscale_" + filename);
+//    return result;
+    image = result;
 }
 
 //filter 2
@@ -120,38 +120,53 @@ void convertToBlackAndWhite(Image& image) {
     }
 }
 
-// int main() {
-//     string filename;
-//     cout << "Pls enter colored image name to turn to black and white: ";
-//     cin >> filename;
-//     Image image(filename);
-//     convertToBlackAndWhite(image);
-//     cout << "Pls enter image name to store new image\n";
-//     cout << "and specify extension .jpg, .bmp, .png, .tga: ";
-//     cin >> filename;
-//     image.saveImage(filename);
-//     system(filename.c_str());
-//     return 0;
-// }
-
 //filter 3
 
 void Inverted_Image(Image& image) {
+    Image result = image;
     for (int i = 0; i < image.width; i++) {
         for (int n = 0; n < image.height; n++) {
             for (int k = 0; k < 3; k++) {
-                image.setPixel(i, n, k, 255 - image.getPixel(i, n, k));
+                result.setPixel(i, n, k, 255 - image.getPixel(i, n, k));
             }
         }
     }
+//    return result;
+    image = result;
 }
 
 //filter 4
+// resize
+void ETo(Image &originalImage, int w, int h) {
+
+    float dw = (1.0*w)/originalImage.width;
+    float dh = (1.0*h)/originalImage.height;
+
+    if(dw < 1 || dh < 1)
+    {
+        cout << "The image is larger than the given h/w\n";
+        return;
+    }
+    int io = 0,jo = 0;
+    Image new_img(w,h);
+    for (int i = 0; i < w; ++i) {
+        jo = 0;
+        if( i > io*dw ) io++;
+        for (int j = 0; j < h; ++j) {
+            if( j > jo*dh ) jo++;
+            for (int k = 0; k < 3; ++k)
+            {
+                new_img(i, j, k) = originalImage(min(io,originalImage.width-1), min(jo,originalImage.height-1) , k);
+            }
+        }
+    }
+    string outputFilename = "ENLARGED.jpg";
+    new_img.saveImage(outputFilename);
+}
 
 // Function to apply Filter 4: Blend two images
-void blendImages(string& filename, string& filename2) {
-    Image toy1(filename);
-    Image toy2(filename2);
+Image blendImages(Image& toy1, Image& toy2 ) {
+
     int minWidth = std::min(toy1.width, toy2.width);
     int minHeight = std::min(toy1.height, toy2.height);
     Image img2(minWidth, minHeight);
@@ -163,17 +178,17 @@ void blendImages(string& filename, string& filename2) {
                 if (img2(i, j, k) > 255) {
                     img2(i, j, k) = 255;
                 }
+
             }
         }
     }
-
-    img2.saveImage("blended_" + filename + "_" + filename2);
+    return img2;
 }
 
 //filter 5
 
 // Function to flip the image horizontally
-Image flipHorizontally(Image& image) {
+void flipHorizontally(Image& image) {
     for (int i = 0; i < image.width / 2; ++i) {
         for (int j = 0; j < image.height; ++j) {
             for (int k = 0; k < 3; ++k) {
@@ -181,10 +196,9 @@ Image flipHorizontally(Image& image) {
             }
         }
     }
-    return image;
 }
 // Function to flip the image vertically
-Image flipVertically(Image& image) {
+void flipVertically(Image& image) {
     for (int j = 0; j < image.height / 2; ++j) {
         for (int i = 0; i < image.width; ++i) {
             for (int k = 0; k < 3; ++k) {
@@ -192,7 +206,6 @@ Image flipVertically(Image& image) {
             }
         }
     }
-    return image;
 }
 //flip menu
 void flip_menu(Image& original) {
@@ -201,23 +214,28 @@ void flip_menu(Image& original) {
         cout << "1) Vertically" << endl;
         cout << "2) Flip horizontally" << endl;
 
-        int choice = Validmenu_Choice(1,2);
+        int choice = Validmenu_Choice(2); // Accepts numbers 1 and 2 only
 
         if (choice == 1) {
-            Image flip_Vertically = flipVertically(original);
-            flip_Vertically.saveImage("arrowVertically_image.jpg");
-            break; // Exit the loop after processing the choice
+            flipVertically(original);
+            original.saveImage("arrowVertically_image.jpg");
+            break;
         } else if (choice == 2) {
-            Image flip_horizontally = flipHorizontally(original);
-            flip_horizontally.saveImage("arrowhorizontally_image.jpg");
-            break; // Exit the loop after processing the choice
+            flipHorizontally(original);
+            original.saveImage("arrowhorizontally_image.jpg");
+            break;
+        }
+        else {
+            cout << "INVALID CHOICE !" << endl;
         }
     }
+
 }
+
 
 //filter 6
 
-Image Rotate_270(Image& original) {
+void Rotate_270(Image& original) {
     // Create a new image and swapped for dimentioals 90-degree clockwise rotation
     Image rotated(original.height, original.width);
 
@@ -231,10 +249,10 @@ Image Rotate_270(Image& original) {
         }
     }
 
-    return rotated;
+    original = rotated;
 }
 
-Image Rotate_90(Image& original) {
+void Rotate_90(Image& original) {
     // Create a new image with swapped dimensions for 90-degree rotation
     Image rotated(original.height, original.width);
 
@@ -248,11 +266,11 @@ Image Rotate_90(Image& original) {
         }
     }
 
-    return rotated;
+    original = rotated;
 }
 
 
-Image Rotate_180(Image& original) {
+void Rotate_180(Image& original) {
     // Create a new image with the same dimensions for the rotated image
     Image rotated(original.width, original.height);
 
@@ -266,9 +284,10 @@ Image Rotate_180(Image& original) {
         }
     }
 
-    return rotated;
+    original = rotated;
 }
 
+//routaion menu
 void Rotation_menu(Image& original) {
     while (true) {
         cout << endl << "Choose a degree :" << endl;
@@ -277,56 +296,108 @@ void Rotation_menu(Image& original) {
         cout << "3) 270's clockwise" << endl;
         cout << "4) 360's clockwise" << endl;
 
-        int choice = Validmenu_Choice(1,4);
+        int choice = Validmenu_Choice(4); // Accepts numbers 1 to 4
 
         if (choice == 1) {
-            // Rotate the image 90 degrees clockwise
-            Image rotated90 = Rotate_90(original);
-            rotated90.saveImage("rotated90_image.jpg");
-            break;
-        } else if (choice == 2) {
-            // Rotate the image 180 degrees clockwise
-            Image rotated180 = Rotate_180(original);
-            rotated180.saveImage("rotated180_image.jpg");
-            break;
-        } else if (choice == 3) {
-            // Rotate the image 270 degrees clockwise
-            Image rotated270 = Rotate_270(original);
-            rotated270.saveImage("rotated270_image.jpg");
-            break;
-        } else if (choice == 4) {
-            // Rotate the image 360 degrees clockwise
-            Image rotated360 = original;
-            rotated360.saveImage("rotated360_image.jpg");
-            break;
+            Rotate_90(original);
+
         }
+        else if (choice == 2) {
+            Rotate_180(original);
+
+        }
+        else if (choice == 3) {
+            Rotate_270(original);
+
+        }
+        else if (choice == 4) {
+            continue;
+        }
+        else {
+            cout << "INVALID CHOICE !" << endl;
+            continue;
+        }
+        break;
     }
+
+
 }
 
+// filter  11
+
+// Function to resize the image to 500x500
+void resizeTo500x500(const string& filename) {
+    // Load the original image
+    Image originalImage(filename);
+
+    // Resize the image to 500x500 during initialization
+    Image resizedImage(500, 500);
+
+    // Loop through each pixel of the resized image
+    for (int i = 0; i < 500; ++i) {
+        for (int j = 0; j < 500; ++j) {
+            // Calculate the corresponding pixel coordinates in the original image
+            int origX = static_cast<int>(static_cast<double>(i) / 500 * originalImage.width);
+            int origY = static_cast<int>(static_cast<double>(j) / 500 * originalImage.height);
+
+            // Copy the pixel value from the original image to the resized image
+            for (int k = 0; k < 3; ++k) {
+                resizedImage(i, j, k) = originalImage(origX, origY, k);
+            }
+        }
+    }
+
+    // Prompt user for new filename
+    string outputFilename;
+    cout << "Please enter the image name to store the resized image (500x500)\n";
+    cout << "and specify extension (.jpg, .bmp, .png, .tga): ";
+    cin >> outputFilename;
+
+    // Save the resized image
+    resizedImage.saveImage(outputFilename);
+
+    // Open the saved image
+    system(outputFilename.c_str());
+}
+
+// Function to resize the image to 1280x800
+void resizeTo1280x800(const string& filename) {
+    // Load the original image
+    Image originalImage(filename);
+
+    // Resize the image to 1280x800 during initialization
+    Image resizedImage(1280, 800);
+
+    // Loop through each pixel of the resized image
+    for (int i = 0; i < 1280; ++i) {
+        for (int j = 0; j < 800; ++j) {
+            // Calculate the corresponding pixel coordinates in the original image
+            int origX = static_cast<int>(static_cast<double>(i) / 1280 * originalImage.width);
+            int origY = static_cast<int>(static_cast<double>(j) / 800 * originalImage.height);
+
+            // Copy the pixel value from the original image to the resized image
+            for (int k = 0; k < 3; ++k) {
+                resizedImage(i, j, k) = originalImage(origX, origY, k);
+            }
+        }
+    }
+
+    // Prompt user for new filename
+    string outputFilename;
+    cout << "Please enter the image name to store the resized image (1280x800)\n";
+    cout << "and specify extension (.jpg, .bmp, .png, .tga): ";
+    cin >> outputFilename;
+
+    // Save the resized image
+    resizedImage.saveImage(outputFilename);
+
+    // Open the saved image
+    system(outputFilename.c_str());
+}
 
 //main program
-int main() {
-    cout << "WELCOME TO OUR PHOTO EDITOR PROGRAM" << endl;
 
-    // Take the photo from the user and check the validation of it
-    string filename;
-    cout << "Please insert the filename of your photo: ";
-    cin >> filename;
-
-    // Load the photo into the Image object
-    Image original(filename);
-
-    if (!isValidExtension(filename)) {
-        cerr << "Unsupported file format. Please provide a filename with a supported extension (jpg, jpeg, png, bmp, tga)." << endl;
-        return 1; // Return error code indicating failure
-    }
-
-    // Check if the image was loaded successfully
-    if (original.imageData == nullptr) {
-        cerr << "Failed to load the image! Please check the filename." << endl;
-        return 1; // Return error code indicating failure
-    }
-
+void main_program(Image& original) {
     int choice;
     while (true) {
         cout << "==> CHOOSE A FILTER:" << endl;
@@ -338,31 +409,91 @@ int main() {
         cout << "6) Rotate Image" << endl;
         cout << "7) EXIT" << endl;
 
-        choice = Validmenu_Choice(1,7);
+        choice = Validmenu_Choice(7);
 
         if (choice == 1) {
-            applyGrayscaleFilter(filename);
-        } else if (choice == 2) {
+            applyGrayscaleFilter(original);
+        }
+        else if (choice == 2) {
             convertToBlackAndWhite(original);
-            original.saveImage("building.jpg");
-        } else if (choice == 3) {
+        }
+        else if (choice == 3) {
             Inverted_Image(original);
-            original.saveImage("inverted1.jpg");
-        } else if (choice == 4) {
-            string filename2;
+        }
+        else if (choice == 4) {
             cout << "Please insert the second filename of your photo: ";
-            cin >> filename2;
-            blendImages(filename, filename2);
-        } else if (choice == 5) {
+            string filename2 = validfilename_();
+            Image image2(filename2);
+            blendImages(original , image2);
+        }
+        else if (choice == 5) {
             flip_menu(original);
-        } else if (choice == 6) {
+        }
+        else if (choice == 6) {
             Rotation_menu(original);
-        } else if (choice == 7) {
+        }
+        else if (choice == 7) {
             cout << "PROGRAM HAS ENDED!" << endl;
-            return 0; // End the program successfully
-        } else {
+            break; // End the program successfully
+        }
+        else {
             cout << "Invalid choice! Please choose a number between 1 and 7." << endl;
+            continue; // Restart the loop to prompt for a valid choice
+        }
+        break;
+    }
+}
+
+void MAIN() {
+    cout << "WELCOME TO OUR PHOTO EDITOR PROGRAM" << endl;
+
+    string filename;
+    Image currentImage;
+    Image editedImage;
+
+    while (true) {
+        cout << "==> CHOOSE AN OPTION:" << endl;
+        cout << "1) Load a new image" << endl;
+        cout << "2) Apply a filter on the current image" << endl;
+        cout << "3) Save the current image" << endl;
+        cout << "4) Exit the program" << endl;
+
+      int choice = Validmenu_Choice(4);
+
+        if (choice == 1) {
+            filename = validfilename_();
+            // Load the photo into the Image object
+            currentImage.loadNewImage(filename);
+        }
+        else if (choice == 2) {
+            if (filename.empty()) {
+                cerr << "No image is loaded. Please load an image before applying a filter." << endl;
+                continue;
+            }
+            main_program(currentImage);
+        }
+        else if (choice == 3) {
+            if (filename.empty()) {
+                cerr << "No image is loaded. Please load an image before saving." << endl;
+                continue;
+            }
+            // Edit filename for save functionality
+            string output_filename;
+            cout << "Enter the name of the output file, including the extension: ";
+            cin >> output_filename;
+            currentImage.saveImage(output_filename);
+            cout << "Image saved as " << output_filename << endl;
+        }
+        else if (choice == 4) {
+            cout << "PROGRAM HAS ENDED!" << endl;
+            break;
+        }
+        else {
+            cout << "Invalid choice! Please choose a number between 1 and 4." << endl;
         }
     }
-    return 0;
+}
+
+int main(){
+    MAIN();
 }
