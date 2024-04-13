@@ -113,6 +113,8 @@ END
 #include <string>
 #include <cmath>
 #include <cstdlib>
+#include <limits>
+#include <vector>
 using namespace std;
 
 // Function to check if the file extension is valid
@@ -430,7 +432,7 @@ void Darken_Image(Image& image) {
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
             for (int k = 0; k < channels; k++) {
-                image (i,j,k)= (0.5)*image(i,j,k);
+               image (i,j,k)= (0.5)*image(i,j,k);
                 if (image(i, j, k) > 255) {
                     image(i, j, k) = 255;
                 }
@@ -439,7 +441,7 @@ void Darken_Image(Image& image) {
     }
 
 }
-// filter 7       light
+ // filter 7       light
 
 void lighten_Image(Image & image){
     int width = image.width;
@@ -500,6 +502,179 @@ void cropImage() {
     system(outputFilename.c_str());
 }
 
+// filter 9
+void simple_frame(Image& photo , int R , int G , int B) {
+
+    //multiplying by 0.01 to make the thickness of the frame flexible with the photos' dimensions.
+
+    for (int i = 0; i < photo.width * 0.01 ; ++i) {  //  left side
+        for (int j = 0; j < photo.height; ++j) {
+            photo(i, j, 0) = R;
+            photo(i, j, 1) = G;
+            photo(i, j, 2) = B;
+        }
+    }
+
+    int width = photo.width; // Get the width of the image
+    for (int i = 0; i < photo.width * 0.01 ; ++i) {  // right side
+        for (int j = 0; j < photo.height; ++j) {
+            photo(width - 1 - i, j, 0) = R;
+            photo(width - 1 - i, j, 1) = G;
+            photo(width - 1 - i, j, 2) = B;
+        }
+    }
+
+
+    for(int i = 0 ; i < photo.width ; ++i){ //top
+        for(int j = 0 ; j < photo.height * 0.01 ; ++j ){
+            photo(i, j, 0) = R;
+            photo(i, j, 1) = G;
+            photo(i, j, 2) = B;
+        }
+    }
+    //bottom
+    int lastrow = photo.height;
+    for(int i = 0 ; i < photo.width ; ++i){
+        for(int j = 0 ; j < photo.height * 0.01 ; ++j ){
+            photo(i, lastrow - 1 - j , 0) = R;
+            photo(i, lastrow - 1 - j, 1) = G;
+            photo(i, lastrow - 1 - j, 2) = B;
+        }
+    }
+
+    // Save the modified image
+    photo.saveImage("simple-frame.jpg");
+}
+
+
+void fancy_frame(Image& photo , int R , int G , int B) {
+
+    simple_frame(photo,R,G,B);
+
+    //adding white fancy frame
+
+    // Adding fancy frame for left side
+    for (int i = photo.width * 0.01 + 13 ; i < photo.width * 0.01 + 19 ; ++i) {
+        for (int j = 0; j < photo.height; ++j) {
+            for(int k = 0 ; k < 3 ; ++k ) {
+                photo(i, j, k) = 255;
+            }
+        }
+    }
+
+    for (int i = photo.width * 0.01 + 20 ; i < photo.width * 0.01 + 26 ; ++i) {
+        for (int j = 0; j < photo.height; ++j) {
+            for(int k = 0 ; k < 3 ; ++k ) {
+                photo(i, j, k) = 255;
+            }
+        }
+    }
+
+    int width = photo.width; // Get the width of the image
+    // Adding fancy frame for right side
+    for (int i = photo.width * 0.01 + 13 ; i < photo.width * 0.01 + 19 ; ++i) {
+        for (int j = 0; j < photo.height; ++j) {
+            for(int k = 0 ; k < 3 ; ++k ) {
+                photo(width - 1 - i, j, k) = 255;
+            }
+        }
+    }
+    for (int i = photo.width * 0.01 + 20 ; i < photo.width * 0.01 + 26 ; ++i) {
+        for (int j = 0; j < photo.height; ++j) {
+            for(int k = 0 ; k < 3 ; ++k ) {
+                photo(width - 1 - i, j, k) = 255;
+            }
+        }
+    }
+
+    //adding extra frame for top
+    for(int i = 0 ; i < photo.width ; ++i){
+        for(int j = photo.height * 0.01 + 13   ; j < photo.height * 0.01  + 19 ; ++j ){
+            for(int k = 0 ; k < 3 ; ++k ) {
+                photo(i, j, k) = 255;
+            }
+        }
+    }
+    for(int i = 0 ; i < photo.width ; ++i){
+        for(int j = photo.height * 0.01 + 20  ; j < photo.height * 0.01 + 26 ; ++j ){
+            for(int k = 0 ; k < 3 ; ++k ) {
+                photo(i, j, k) = 255;
+            }
+        }
+    }
+
+    int lastrow = photo.height;
+    //adding extra frame for top
+    for(int i = 0 ; i < photo.width ; ++i){
+        for(int j = photo.height * 0.01 + 13  ; j < photo.height * 0.01 + 19 ; ++j ){
+            for(int k = 0 ; k < 3 ; ++k ) {
+                photo(i, lastrow - 1 - j, k) = 255;
+            }
+        }
+    }
+    for(int i = 0 ; i < photo.width ; ++i){
+        for(int j = photo.height * 0.01 + 20  ; j < photo.height * 0.01 + 26 ; ++j ){
+            for(int k = 0 ; k < 3 ; ++k ) {
+                photo(i, lastrow - 1 - j, k) = 255;
+            }
+        }
+    }
+
+
+    // Save the modified image
+    photo.saveImage("fancy-frame.jpg");
+}
+
+// menu
+void frame_menu(Image& photo) {
+    while (true) {
+        cout << "Choose a frame :" << endl;
+        cout << "1)Simple" << endl;
+        cout << "2)Fancy" << endl;
+
+        int choice = Validmenu_Choice(2); // Accepts numbers 1 and 2 only
+        if (choice == 1) {
+            cout << "Choose a color for your frame" << endl;
+            cout << "1)Red" << endl;
+            cout << "2)Green" << endl;
+            cout << "3)Blue" << endl;
+
+            int choice2 = Validmenu_Choice(3);
+            if (choice2 == 1){
+                simple_frame(photo , 225 , 0 , 0);
+            }
+            else if (choice2 == 2){
+                simple_frame(photo , 0 , 225 , 0);
+            }
+            else if(choice2 == 3){
+                simple_frame(photo , 0 , 0 , 255);
+            }
+            break;
+        }
+        else if (choice == 2) {
+            cout << "Choose a color for your frame" << endl;
+            cout << "1)Red" << endl;
+            cout << "2)Green" << endl;
+            cout << "3)Blue" << endl;
+
+            int choice2 = Validmenu_Choice(3);
+            if (choice2 == 1){
+                fancy_frame(photo , 225 , 0 , 0);
+            }
+            else if (choice2 == 2){
+                fancy_frame(photo , 0 , 225 , 0);
+            }
+            else if(choice2 == 3){
+                fancy_frame(photo , 0 , 0 , 255);
+            }
+            break;
+        }
+        else {
+            cout << "INVALID CHOICE !" << endl;
+        }
+    }
+
+}
 
 // filter 10
 void detectEdgesSobel(Image &image) {
@@ -512,13 +687,13 @@ void detectEdgesSobel(Image &image) {
                 for (int new_j =  j; new_j < min(boarder + j,image.height); new_j++){
                     for (int rgb = 0; rgb < 3; rgb++){
                         image(i, new_j, rgb) = 0;
+                        }
                     }
-                }
-                j = j + boarder;
-                j--;
+                    j = j + boarder;
+                    j--;
             }else{
                 for (int rgb = 0; rgb < 3; rgb++){
-                    image(i, j, rgb) = 255;
+                        image(i, j, rgb) = 255;
                 }
             }
         }
@@ -557,6 +732,145 @@ Image resizeImage() {
 
     return resizedImage;
 }
+//filter 12
+
+// Function to calculate prefix sum for a given color channel.
+void calculatePrefixSum(Image& photo,vector<vector<int>>& prefixSumR,
+                        vector<vector<int>>& prefixSumG,
+                        vector<vector<int>>& prefixSumB) {
+    int width = photo.width;
+    int height = photo.height;
+    //
+    prefixSumR.assign(width, vector<int>(height, 0));
+    prefixSumG.assign(width, vector<int>(height, 0));
+    prefixSumB.assign(width, vector<int>(height, 0));
+
+    // Calculate the prefix sum for each color channel
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
+            // Access pixel values for each channel
+            prefixSumR[x][y] = photo(x, y, 0);
+            prefixSumG[x][y] = photo(x, y, 1);
+            prefixSumB[x][y] = photo(x, y, 2);
+
+            // Calculate prefix sum for each channel
+            if (x > 0) {
+                prefixSumR[x][y] += prefixSumR[x - 1][y];
+                prefixSumG[x][y] += prefixSumG[x - 1][y];
+                prefixSumB[x][y] += prefixSumB[x - 1][y];
+            }
+            if (y > 0) {
+                prefixSumR[x][y] += prefixSumR[x][y - 1];
+                prefixSumG[x][y] += prefixSumG[x][y - 1];
+                prefixSumB[x][y] += prefixSumB[x][y - 1];
+            }
+            if (x > 0 && y > 0) {
+                prefixSumR[x][y] -= prefixSumR[x - 1][y - 1];
+                prefixSumG[x][y] -= prefixSumG[x - 1][y - 1];
+                prefixSumB[x][y] -= prefixSumB[x - 1][y - 1];
+            }
+        }
+    }
+}
+void blur_filter(Image& photo , int radius) {
+    vector<vector<int>> prefixSumR;
+    vector<vector<int>> prefixSumG;
+    vector<vector<int>> prefixSumB;
+
+    int diameter = (2 * radius + 1) * (2 * radius + 1);
+    int width = photo.width;
+    int height = photo.height;
+    calculatePrefixSum(photo, prefixSumR, prefixSumG, prefixSumB);
+    // Apply the blur filter
+    for (int x = radius; x < width - radius; ++x) {
+        for (int y = radius; y < height - radius; ++y) {
+            // Check if the indices are within bounds
+            if (x + radius < width && y + radius < height && x - radius - 1 >= 0 && y - radius - 1 >= 0) {
+                // Calculate the sum of pixel values within the filter window using prefix sums
+                int sum_red = prefixSumR[x + radius][y + radius] - prefixSumR[x - radius - 1][y + radius] -
+                              prefixSumR[x + radius][y - radius - 1] + prefixSumR[x - radius - 1][y - radius - 1];
+                int sum_green = prefixSumG[x + radius][y + radius] - prefixSumG[x - radius - 1][y + radius] -
+                                prefixSumG[x + radius][y - radius - 1] + prefixSumG[x - radius - 1][y - radius - 1];
+                int sum_blue = prefixSumB[x + radius][y + radius] - prefixSumB[x - radius - 1][y + radius] -
+                               prefixSumB[x + radius][y - radius - 1] + prefixSumB[x - radius - 1][y - radius - 1];
+
+                // Calculate the average values using floating-point division
+                int average_red = sum_red / diameter;
+                int average_green = sum_green / diameter;
+                int average_blue = sum_blue / diameter;
+
+                // Update the result image with the average values
+                photo(x, y, 0) = average_red;
+                photo(x, y, 1) = average_green;
+                photo(x, y, 2) = average_blue;
+            }
+        }
+    }
+    photo.saveImage("blur.jpg");
+}
+
+void blur_menu(Image& photo) {
+    cout << "choose a level of blur :" << endl;
+    cout << "1)Week" << endl
+         << "2)Medium" << endl
+         << "3)Strong" << endl;
+    int choice = Validmenu_Choice(3);
+    while (true) {
+        if (choice == 1) {
+            blur_filter(photo , 11);
+        } else if (choice == 2) {
+            blur_filter(photo , 21);
+        } else if (choice == 3) {
+            blur_filter(photo , 31);
+        }
+        else {
+            cout << "INVALID CHOICE !" << endl;
+        }
+        break;
+
+    }
+}
+
+//Filter 13
+// Function to apply the sunrise effect to the image
+void applySunriseEffect(Image& image) {
+    for (int i = 0; i < image.width; ++i) {
+        for (int j = 0; j < image.height; ++j) {
+            // Calculate new RGB values for sunrise effect
+            unsigned int redIntensity = image(i, j, 0); // Red channel
+            unsigned int greenIntensity = image(i, j, 1); // Green channel
+            unsigned int blueIntensity = image(i, j, 2); // Blue channel
+
+            // Adjust RGB values for sunrise effect
+            redIntensity += 30; // Increase red for warm sunrise effect
+            greenIntensity += 40; // Increase green for warm sunrise effect
+            blueIntensity -= 30; // Decrease blue for warm sunrise effect
+
+            // Ensure RGB values are within the valid range
+            if (redIntensity > 255) redIntensity = 255;
+            if (greenIntensity > 255) greenIntensity = 255;
+            if (blueIntensity < 0) blueIntensity = 0;
+
+            // Update the image with the new RGB values
+            image(i, j, 0) = redIntensity;
+            image(i, j, 1) = greenIntensity;
+            image(i, j, 2) = blueIntensity;
+        }
+    }
+}
+
+// filter 16
+void purple_filter(Image& photo){
+    for (int i = 0 ; i < photo.width; ++i) {
+        for (int j = 0; j < photo.height; ++j) {
+            photo(i, j, 0) *= 1 ;
+            photo(i, j, 1) *= 0.70 ;
+            photo(i, j, 2) *=  1 ;
+        }
+    }
+    photo.saveImage("purple-filter.jpg");
+}
+
 // filter 17
 void Infrared(Image& image) {
     for (int i = 0; i < image.width; i++) {
@@ -624,8 +938,8 @@ void main_program(Image& original) {
         cout << "10) Detect Image Edges"<<endl;
         cout << "11) Resizing Images"<<endl;
         cout << "12) Blur Images"<<endl;
-        cout << "13) " <<endl;
-        cout << "14) " <<endl;
+        cout << "13) nature Sunlight" <<endl;
+        cout << "14) purple Filter" <<endl;
         cout << "15) Infrared Filter"<<endl;
         cout << "16) EXIT" << endl;
 
@@ -669,7 +983,7 @@ void main_program(Image& original) {
             cropImage();
         }
         else if (choice ==9){
-
+            frame_menu(original);
         }
         else if (choice == 10){
             detectEdgesSobel(original);
@@ -678,13 +992,13 @@ void main_program(Image& original) {
             resizeImage();
         }
         else if (choice ==12){
-
+            blur_menu(original);
         }
         else if (choice ==13){
-
+            applySunriseEffect(original);
         }
         else if (choice ==14){
-
+            purple_filter(original);
         }
         else if (choice ==15){
             Infrared(original);
