@@ -1,117 +1,7 @@
-/*
-File Name : CS112_A3_part1_S19_20230052_20230419_20230137.cpp
-Authors :
-(1) Malak Nour-Elhussien Samir , ID: 20230419 , S19 , Filter taken : 3 and 6
- email : nourrm218@gmail.com
-
-(2) Esraa Hussien Mohamed , ID : 20230052  ,  S19  ,  Filter taken : 1 and 4
-email  :  ehussien143@gmail.com
-
-(3) Rahma salah Eldin Mahmoud ,ID : 20230137 , S19 , Filter taken :  2 and 5
- email  :  rahmasalah072@gmail.com
-
-Date : 26 March 2024
-
-      << System Diagram >>
-
- START
-
-    |--- WELCOME MESSAGE
-    |
-    |--- LOOP UNTIL EXIT
-    |       |
-    |       |---> [1] Load a new image
-    |       |
-    |       |---> [2] Apply a filter on the current image
-    |       |
-    |       |---> [3] Save the current image
-    |       |
-    |       |---> [4] Exit the program
-    |
-    |--- IF [1] Load a new image
-    |       |
-    |       |---> PROMPT USER FOR FILENAME
-    |       |
-    |       |---> LOAD IMAGE
-    |       |
-    |       |---> GO BACK TO LOOP
-    |
-    |--- IF [2] Apply a filter on the current image
-    |       |
-    |       |--- LOOP UNTIL EXIT
-    |       |       |
-    |       |       |---> CHOOSE A FILTER:
-    |       |       |       |
-    |       |       |       |---> [1] Grayscale Conversion
-    |       |       |       |
-    |       |       |       |---> [2] Black and White
-    |       |       |       |
-    |       |       |       |---> [3] Invert Image
-    |       |       |       |
-    |       |       |       |---> [4] Merge Images
-    |       |       |       |
-    |       |       |       |---> [5] Flip Image
-    |       |       |       |
-    |       |       |       |---> [6] Rotate Image
-    |       |       |       |
-    |       |       |       |---> [7] EXIT
-    |       |
-    |       |--- IF [1] Grayscale Conversion
-    |       |       |
-    |       |       |---> APPLY GRAYSCALE FILTER
-    |       |
-    |       |--- IF [2] Black and White
-    |       |       |
-    |       |       |---> APPLY BLACK AND WHITE FILTER
-    |       |
-    |       |--- IF [3] Invert Image
-    |       |       |
-    |       |       |---> APPLY INVERTED IMAGE FILTER
-    |       |
-    |       |--- IF [4] Merge Images
-    |       |       |
-    |       |       |---> PROMPT USER FOR SECOND FILENAME
-    |       |       |
-    |       |       |---> LOAD SECOND IMAGE
-    |       |       |
-    |       |       |---> BLEND IMAGES
-    |       |
-    |       |--- IF [5] Flip Image
-    |       |       |
-    |       |       |---> CHOOSE FLIP TYPE
-    |       |       |
-    |       |       |---> FLIP IMAGE
-    |       |
-    |       |--- IF [6] Rotate Image
-    |       |       |
-    |       |       |---> CHOOSE ROTATION DEGREE
-    |       |       |
-    |       |       |---> ROTATE IMAGE
-    |       |
-    |       |--- IF [7] EXIT
-    |               |
-    |               |---> GO BACK TO MAIN MENU
-    |
-    |--- IF [3] Save the current image
-    |       |
-    |       |---> PROMPT USER FOR OUTPUT FILENAME
-    |       |
-    |       |---> SAVE IMAGE
-    |
-    |--- IF [4] Exit the program
-            |
-            |---> DISPLAY EXIT MESSAGE
-            |
-            |---> END PROGRAM
-
-END
-*/
-
-#include "Image_Class.h"
+#include "Image_Class.h.txt"
 #include <iostream>
 #include <algorithm>
 #include <string>
-#include <cmath>
 #include <cstdlib>
 #include <limits>
 #include <vector>
@@ -242,7 +132,6 @@ void Inverted_Image(Image& image) {
             }
         }
     }
-//    return result;
     image = result;
 }
 
@@ -271,9 +160,9 @@ Image Enlarge_To(Image &originalImage, int w, int h) {
 void blendImages(Image& toy1, Image& toy2 ) {
     int choice3;
     while(true) {
-        cout << "1)  resize smaller image to largest image and merge" << endl;
-        cout << "2) merge common area" << endl;
-        cout << "enter your choice : ";
+        cout << "1) Resize smallest image to largest image and merge"<< endl;
+        cout << "2) Merge common area"<< endl;
+        cout << "enter your choice : "<<endl;
         cin >> choice3;
 
         if (choice3 == 1) {
@@ -365,7 +254,6 @@ void flip_menu(Image& original) {
             cout << "INVALID CHOICE !" << endl;
         }
     }
-
 }
 
 
@@ -384,7 +272,6 @@ void Rotate_270(Image& original) {
             }
         }
     }
-
     original = rotated;
 }
 
@@ -401,7 +288,6 @@ void Rotate_90(Image& original) {
             }
         }
     }
-
     original = rotated;
 }
 
@@ -419,7 +305,6 @@ void Rotate_180(Image& original) {
             }
         }
     }
-
     original = rotated;
 }
 
@@ -432,7 +317,7 @@ void Darken_Image(Image& image) {
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
             for (int k = 0; k < channels; k++) {
-               image (i,j,k)= (0.5)*image(i,j,k);
+                image (i,j,k)= (0.5)*image(i,j,k);
                 if (image(i, j, k) > 255) {
                     image(i, j, k) = 255;
                 }
@@ -441,8 +326,8 @@ void Darken_Image(Image& image) {
     }
 
 }
- // filter 7       light
 
+// filter 7  light
 void lighten_Image(Image & image){
     int width = image.width;
     int height = image.height;
@@ -460,23 +345,15 @@ void lighten_Image(Image & image){
 // filter 8
 
 // Function to crop the image
-void cropImage() {
-    // Declare variables
-    string filename, outputFilename;
+void cropImage(Image& image) {
+
     int x, y, width, height;
-
-    // Prompt user for input filename
-    cout << "Please enter the colored image name to crop: ";
-    cin >> filename;
-
     // Prompt user for crop coordinates and dimensions
     cout << "Enter the coordinates of the crop area (x and y): ";
     cin >> x >> y;
     cout << "Enter the dimensions of the crop area (width and height): ";
     cin >> width >> height;
 
-    // Load the original image
-    Image originalImage(filename);
 
     // Create a new image with the specified dimensions
     Image croppedImage(width, height);
@@ -485,24 +362,15 @@ void cropImage() {
     for (int i = 0; i < width; ++i) {
         for (int j = 0; j < height; ++j) {
             for (int k = 0; k < 3; ++k) {
-                croppedImage(i, j, k) = originalImage(x + i, y + j, k);
+                croppedImage(i, j, k) = image(x + i, y + j, k);
             }
         }
     }
-
-    // Prompt user for new filename
-    cout << "Please enter the image name to store the cropped image\n";
-    cout << "and specify extension (.jpg, .bmp, .png, .tga): ";
-    cin >> outputFilename;
-
-    // Save the cropped image
-    croppedImage.saveImage(outputFilename);
-
-    // Open the saved image
-    system(outputFilename.c_str());
+    image = croppedImage;
 }
 
 // filter 9
+
 void simple_frame(Image& photo , int R , int G , int B) {
 
     //multiplying by 0.01 to make the thickness of the frame flexible with the photos' dimensions.
@@ -541,9 +409,6 @@ void simple_frame(Image& photo , int R , int G , int B) {
             photo(i, lastrow - 1 - j, 2) = B;
         }
     }
-
-    // Save the modified image
-    photo.saveImage("simple-frame.jpg");
 }
 
 
@@ -687,13 +552,13 @@ void detectEdgesSobel(Image &image) {
                 for (int new_j =  j; new_j < min(boarder + j,image.height); new_j++){
                     for (int rgb = 0; rgb < 3; rgb++){
                         image(i, new_j, rgb) = 0;
-                        }
                     }
-                    j = j + boarder;
-                    j--;
+                }
+                j = j + boarder;
+                j--;
             }else{
                 for (int rgb = 0; rgb < 3; rgb++){
-                        image(i, j, rgb) = 255;
+                    image(i, j, rgb) = 255;
                 }
             }
         }
@@ -701,13 +566,7 @@ void detectEdgesSobel(Image &image) {
 }
 
 // filter 11
-Image resizeImage() {
-    string filename;
-    cout << "Please enter the colored image name to resize: ";
-    cin >> filename;
-
-    // Load the original image
-    Image originalImage(filename);
+void resizeImage(Image& image) {
 
     // Prompt user for new dimensions
     int newWidth, newHeight;
@@ -716,8 +575,8 @@ Image resizeImage() {
     cout << "Enter the new height: ";
     cin >> newHeight;
 
-    float scaleX = static_cast<float>(newWidth) / originalImage.width;
-    float scaleY = static_cast<float>(newHeight) / originalImage.height;
+    float scaleX = static_cast<float>(newWidth) / image.width;
+    float scaleY = static_cast<float>(newHeight) / image.height;
     Image resizedImage(newWidth, newHeight);
     for (int i = 0; i < newWidth; ++i) {
         for (int j = 0; j < newHeight; ++j) {
@@ -725,12 +584,12 @@ Image resizeImage() {
             int origY = static_cast<int>(j / scaleY);
 
             for (int k = 0; k < 3; ++k) {
-                resizedImage(i, j, k) = originalImage(origX, origY, k);
+                resizedImage(i, j, k) = image(origX, origY, k);
             }
         }
     }
+    image = resizedImage;
 
-    return resizedImage;
 }
 //filter 12
 
@@ -907,7 +766,7 @@ void Rotation_menu(Image& original) {
 
         }
         else if (choice == 4) {
-//            return original;
+
             continue;
         }
         else {
@@ -966,7 +825,7 @@ void main_program(Image& original) {
             Rotation_menu(original);
         }
         else if (choice ==7){
-            cout << "1) Darken Image"<<endl<<"2) Lighten Image"<<endl<<"Enter Your choice :";
+            cout <<"1) Darken Image"<<endl<<"2) Lighten Image"<<endl<<"Enter Your choice :";
             int choice2;
             cin>>choice2;
             if (choice2 == 1){
@@ -980,7 +839,7 @@ void main_program(Image& original) {
             }
         }
         else if (choice ==8){
-            cropImage();
+            cropImage(original);
         }
         else if (choice ==9){
             frame_menu(original);
@@ -989,7 +848,7 @@ void main_program(Image& original) {
             detectEdgesSobel(original);
         }
         else if (choice ==11){
-            resizeImage();
+            resizeImage(original);
         }
         else if (choice ==12){
             blur_menu(original);
@@ -1023,7 +882,7 @@ void MAIN() {
     Image editedImage;
 
     while (true) {
-        cout << "==> CHOOSE AN OPTION:" << endl;
+        cout << "==> CHOOSE AN OPTION" << endl;
         cout << "1) Load a new image" << endl;
         cout << "2) Apply a filter on the current image" << endl;
         cout << "3) Save the current image" << endl;
@@ -1054,7 +913,7 @@ void MAIN() {
             cin >> output_filename;
             currentImage.saveImage(output_filename);
             cout << "Image saved as " << output_filename << endl;
-            system(output_filename.c_str());
+            system(output_filename.c_str()); //display image for the user
         }
         else if (choice == 4) {
             cout << "PROGRAM HAS ENDED!" << endl;
